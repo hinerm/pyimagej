@@ -65,6 +65,39 @@ def set_ij_env(ij_dir):
     return len(jars)
 
 
+def show_ui(ij_dir_or_version_or_endpoint=None, ui=None):
+    import objc
+    from Foundation import NSObject
+    from AppKit import NSApp, NSApplication, NSApplicationActivationPolicyRegular
+    from PyObjCTools import AppHelper
+
+    class AppDelegate (NSObject):
+        def init(self):
+            self = objc.super(AppDelegate, self).init()
+            if self is None:
+                return None
+            return self
+
+        def runjava_(self, arg):
+            ij = init(ij_dir_or_version_or_endpoint, headless=False)
+            if ui is None:
+                ij.ui().showUI("swing")
+            else:
+                ij.ui().showUI(ui)
+
+        def applicationDidFinishLaunching_(self, aNotification):
+            self.performSelectorInBackground_withObject_("runjava:", 0)
+
+    app = NSApplication.sharedApplication()
+    delegate = AppDelegate.alloc().init()
+    NSApp().setDelegate_(delegate)
+    # this is necessary to have keyboard events sent to the UI;
+    #   basically this call makes the script act like an OS X application,
+    #   with Dock icon and everything
+    NSApp.setActivationPolicy_(NSApplicationActivationPolicyRegular)
+    AppHelper.runEventLoop()
+
+
 def init(ij_dir_or_version_or_endpoint=None, headless=True, new_instance=False):
     """
     Initialize the ImageJ environment.
